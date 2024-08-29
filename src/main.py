@@ -80,19 +80,19 @@ if __name__ == '__main__':
         channel = f'channel-{str(uuid.uuid4())}'
         subscriber = redis_client.pubsub()
         subscriber.psubscribe(channel)
-        sub = Sub(channel=channel, subscriber=subscriber)
-        pub = Pub(channel=channel)
+        sub_obj = Sub(channel=channel, subscriber=subscriber)
+        pub_obj = Pub(channel=channel)
 
         def handle_signal(signum, frame):
             logger.warning(f"[{channel}] Received signal {signum}, shutting down gracefully...")
-            Pub(channel=channel).stop_pub()
-            Sub(channel=channel, subscriber=subscriber).stop_sub()
+            pub_obj.stop_pub()
+            sub_obj.stop_sub()
             sys.exit(0)
         
         signal.signal(signal.SIGTERM, handle_signal)
         signal.signal(signal.SIGINT, handle_signal)
-        sub = Process(target=sub.run_sub)
-        pub = Process(target=pub.run_pub)
+        sub = Process(target=sub_obj.run_sub)
+        pub = Process(target=pub_obj.run_pub)
         sub.start()
         pub.start()
     
